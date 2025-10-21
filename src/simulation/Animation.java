@@ -1,4 +1,4 @@
-package utils;
+package simulation;
 
 import models.shapes.Figure;
 import javax.swing.*;
