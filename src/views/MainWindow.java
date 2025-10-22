@@ -1,26 +1,18 @@
 package views;
 
-import models.shapes.*;
-import simulation.SimulationManager;
+import models.shapes.Figure;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class MainWindow {
     private JFrame frame;
-    private Figure figure;
     private FigurePanel figurePanel;
     private JPanel topPanel;
-    private JTextField textFieldX;
-    private JTextField textFieldY;
-    private JTextField textFieldSize1;
-    private JTextField textFieldSize2;
-    private JLabel labelX;
-    private JLabel labelY;
-    private JLabel labelSize1;
-    private JLabel labelSize2;
+    private JTextField textFieldX, textFieldY, textFieldSize1, textFieldSize2;
+    private JLabel labelX, labelY, labelSize1, labelSize2;
     private JComboBox<String> comboBoxFigure;
-    private SimulationManager simulationManager;
+    private JButton updateButton;
 
     public MainWindow() {
         initUI();
@@ -53,10 +45,8 @@ public class MainWindow {
         textFieldSize2.setText("100");
 
         comboBoxFigure = new JComboBox<>(new String[]{"Circle", "Triangle", "Square", "EquilateralTriangle"});
-        comboBoxFigure.addActionListener(e -> updateSizeFields());
 
-        JButton updateButton = new JButton("Actualizar");
-        updateButton.addActionListener(e -> updateFigure());
+        updateButton = new JButton("Actualizar");
 
         topPanel.add(labelX);
         topPanel.add(textFieldX);
@@ -71,66 +61,23 @@ public class MainWindow {
 
         frame.add(topPanel, BorderLayout.NORTH);
 
-        figure = new Circle(50, 50, 100, Color.BLUE);
-        figure.setVx(Integer.parseInt(textFieldX.getText()));
-        figure.setVy(Integer.parseInt(textFieldY.getText()));
-
-        figurePanel = new FigurePanel(figure);
+        figurePanel = new FigurePanel(null);
         figurePanel.setBackground(new Color(20, 20, 20));
         frame.add(figurePanel, BorderLayout.CENTER);
-
-        simulationManager = new SimulationManager();
-        simulationManager.addFigure(figure, figurePanel);
-
-        updateSizeFields();
     }
 
-    private void updateSizeFields() {
-        String selected = (String) comboBoxFigure.getSelectedItem();
-        if ("Triangle".equals(selected)) {
-            labelSize2.setVisible(true);
-            labelSize1.setText("Widht");
-            textFieldSize2.setVisible(true);
-        } else {
-            labelSize2.setVisible(false);
-            textFieldSize2.setVisible(false);
-        }
-        topPanel.revalidate();
-        topPanel.repaint();
-    }
-
-    private void updateFigure() {
-        String selected = (String) comboBoxFigure.getSelectedItem();
-        int size1, size2;
-        try {
-            size1 = Integer.parseInt(textFieldSize1.getText());
-            size2 = Integer.parseInt(textFieldSize2.getText());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(frame, "Introduce tamaños válidos");
-            return;
-        }
-
-        switch (selected) {
-            case "Circle" -> figure = new Circle(50, 50, size1, Color.BLUE);
-            case "Triangle" -> figure = new Triangle(50, 50, size1, size2, Color.RED);
-            case "Square" -> figure = new Square(50, 50, size1, Color.GREEN);
-            case "EquilateralTriangle" -> figure = new EquilateralTriangle(50, 50, size1, Color.PINK);
-        }
-
-        try {
-            int vx = Integer.parseInt(textFieldX.getText());
-            int vy = Integer.parseInt(textFieldY.getText());
-            figure.setVx(vx);
-            figure.setVy(vy);
-        } catch (NumberFormatException ignored) {}
-
-        figurePanel.setFigure(figure);
-        figurePanel.repaint();
-        simulationManager.addFigure(figure, figurePanel);
-    }
+    public JFrame getFrame() { return frame; }
+    public FigurePanel getFigurePanel() { return figurePanel; }
+    public JTextField getTextFieldX() { return textFieldX; }
+    public JTextField getTextFieldY() { return textFieldY; }
+    public JTextField getTextFieldSize1() { return textFieldSize1; }
+    public JTextField getTextFieldSize2() { return textFieldSize2; }
+    public JLabel getLabelSize1() { return labelSize1; }
+    public JLabel getLabelSize2() { return labelSize2; }
+    public JComboBox<String> getComboBoxFigure() { return comboBoxFigure; }
+    public JButton getUpdateButton() { return updateButton; }
 
     public void showWindow() {
         frame.setVisible(true);
-        simulationManager.startAll();
     }
 }
