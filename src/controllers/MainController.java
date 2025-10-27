@@ -6,75 +6,68 @@ import views.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.HashSet;
+import java.util.Set;
 
-public class MainController {
-    private MainWindow view;
-    private SimulationManager simulationManager;
+public class MainController implements KeyListener {
+    private final MainWindow view;
+    private final SimulationManager simulationManager;
     private Figure currentFigure;
+    private final Set<Integer> pressedKeys = new HashSet<>();
+    private final Timer movementTimer;
 
     public MainController(MainWindow view) {
         this.view = view;
         this.simulationManager = new SimulationManager();
+
+        movementTimer = new Timer(15, e -> moveFigureContinuously());
         initController();
     }
 
     private void initController() {
-        view.getComboBoxFigure().addActionListener(e -> updateSizeFields());
-        view.getUpdateButton().addActionListener(e -> updateFigure());
-
-        currentFigure = new Circle(50, 50, 100, Color.BLUE);
-        currentFigure.setVx(Integer.parseInt(view.getTextFieldX().getText()));
-        currentFigure.setVy(Integer.parseInt(view.getTextFieldY().getText()));
+        currentFigure = new Circle(view.getFirstWidth()/2 - 50, view.getFirstHeigth()/2 - 50, 100, Color.BLUE);
+        currentFigure.setVx(0);
+        currentFigure.setVy(0);
         view.getFigurePanel().setFigure(currentFigure);
         simulationManager.addFigure(currentFigure, view.getFigurePanel());
 
-        updateSizeFields();
+        view.getFigurePanel().addKeyListener(this);
+        view.getFigurePanel().setFocusable(true);
+        view.getFigurePanel().requestFocusInWindow();
+
         simulationManager.startAll();
+        movementTimer.start();
     }
 
-    private void updateSizeFields() {
-        String selected = (String) view.getComboBoxFigure().getSelectedItem();
-        if ("Triangle".equals(selected)) {
-            view.getLabelSize2().setVisible(true);
-            view.getLabelSize1().setText("Width");
-            view.getTextFieldSize2().setVisible(true);
-        } else {
-            view.getLabelSize2().setVisible(false);
-            view.getTextFieldSize2().setVisible(false);
-            view.getLabelSize1().setText("Size");
-        }
-        view.getFrame().revalidate();
-        view.getFrame().repaint();
+    @Override
+    public void keyPressed(KeyEvent e) {
+        pressedKeys.add(e.getKeyCode());
     }
 
-    private void updateFigure() {
-        String selected = (String) view.getComboBoxFigure().getSelectedItem();
-        int size1, size2;
+    @Override
+    public void keyReleased(KeyEvent e) {
+        pressedKeys.remove(e.getKeyCode());
+    }
 
-        try {
-            size1 = Integer.parseInt(view.getTextFieldSize1().getText());
-            size2 = Integer.parseInt(view.getTextFieldSize2().getText());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(view.getFrame(), "Introduce tamaños válidos");
-            return;
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    private void moveFigureContinuously() {
+        if (currentFigure == null) return;
+
+        int dx = 0, dy = 0;
+        int step = 5;
+
+        if (pressedKeys.contains(KeyEvent.VK_W)) dy -= step;
+        if (pressedKeys.contains(KeyEvent.VK_S)) dy += step;
+        if (pressedKeys.contains(KeyEvent.VK_A)) dx -= step;
+        if (pressedKeys.contains(KeyEvent.VK_D)) dx += step;
+
+        if (dx != 0 || dy != 0) {
+            currentFigure.move(dx, dy);
+            view.getFigurePanel().repaint();
         }
-
-        switch (selected) {
-            case "Circle" -> currentFigure = new Circle(50, 50, size1, Color.BLUE);
-            case "Triangle" -> currentFigure = new Triangle(50, 50, size1, size2, Color.RED);
-            case "Square" -> currentFigure = new Square(50, 50, size1, Color.GREEN);
-            case "EquilateralTriangle" -> currentFigure = new EquilateralTriangle(50, 50, size1, Color.PINK);
-        }
-
-        try {
-            int vx = Integer.parseInt(view.getTextFieldX().getText());
-            int vy = Integer.parseInt(view.getTextFieldY().getText());
-            currentFigure.setVx(vx);
-            currentFigure.setVy(vy);
-        } catch (NumberFormatException ignored) {}
-
-        view.getFigurePanel().setFigure(currentFigure);
-        view.getFigurePanel().repaint();
-        simulationManager.addFigure(currentFigure, view.getFigurePanel());
     }
 }

@@ -21,6 +21,11 @@ public abstract class Figure {
 
     public abstract void draw(Graphics g);
 
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;
+    }
+
     public int getX() { return x; }
     public void setX(int x) { this.x = x; }
 
